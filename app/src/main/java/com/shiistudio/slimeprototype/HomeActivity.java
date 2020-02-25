@@ -12,7 +12,7 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
-public class HomeActivity extends Activity {
+public class HomeActivity extends Activity implements View.OnClickListener {
     private int frame = 0;
     static final int FRAME_RATE = 50;
     final private Handler handler = new Handler();
@@ -30,32 +30,17 @@ public class HomeActivity extends Activity {
         setUiListener();
 
         btn_save = findViewById(R.id.btn_save);
-        btn_save.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
+        btn_save.setOnClickListener(this);
+        btn_feed = findViewById(R.id.btn_feed);
+        btn_feed.setOnClickListener(this);
 
         HSV_foodCabinet = findViewById(R.id.HSV_foodCabinet);
         HSV_foodCabinet.setElevation(9.f);//button的高度是2dp~8dp
-        btn_feed = findViewById(R.id.btn_feed);
-        btn_feed.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(HSV_foodCabinet.getVisibility() == View.VISIBLE) {
-                    HSV_foodCabinet.setVisibility(View.INVISIBLE);
-                }else{
-                    HSV_foodCabinet.setVisibility(View.VISIBLE);
-                }
-                HSV_foodCabinet.requestLayout();
-            }
-        });
 
         tv_debug = findViewById(R.id.tv_debug);
         base = findViewById(R.id.background);
 
-        handler.post(initialize);
+        handler.postDelayed(initialize,20);
     }
 
     @Override
@@ -69,6 +54,23 @@ public class HomeActivity extends Activity {
     protected void onPause() {
         super.onPause();
         handler.removeCallbacks(mainLoop);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.btn_save:
+                finish();
+                break;
+            case R.id.btn_feed:
+                if(HSV_foodCabinet.getVisibility() == View.VISIBLE) {
+                    HSV_foodCabinet.setVisibility(View.INVISIBLE);
+                }else{
+                    HSV_foodCabinet.setVisibility(View.VISIBLE);
+                }
+                HSV_foodCabinet.requestLayout();
+                break;
+        }
     }
 
     private void setUiListener() {
@@ -169,7 +171,7 @@ public class HomeActivity extends Activity {
             });
 
             is_slime.setPos(base.getWidth()/2,base.getHeight()/2);
-            is_slime.setAnimation(slimeGirlIdleNormal);
+            is_slime.setAnimation(SlimeAnimation.SLIMEGIRL_IDLE);
 
             slimeState.addState(idle,false);
         }
@@ -254,11 +256,4 @@ public class HomeActivity extends Activity {
         }
     };
 
-    private ImageSprite.Animation slimeGirlIdleNormal = new ImageSprite.Animation()
-            .addFrame(R.drawable.slimegirl_normal_135 , 200)
-            .addFrame(R.drawable.slimegirl_normal_24 , 200)
-            .addFrame(R.drawable.slimegirl_normal_135 , 200)
-            .addFrame(R.drawable.slimegirl_normal_24 , 200)
-            .addFrame(R.drawable.slimegirl_normal_135 , 200)
-            .addFrame(R.drawable.slimegirl_normal_6 , 200);
 }
