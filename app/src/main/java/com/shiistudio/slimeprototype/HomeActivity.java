@@ -1,6 +1,8 @@
 package com.shiistudio.slimeprototype;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -8,20 +10,24 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.HorizontalScrollView;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
-public class HomeActivity extends Activity implements View.OnClickListener {
+@SuppressWarnings("FieldCanBeLocal")
+public class HomeActivity extends Activity implements View.OnClickListener, View.OnTouchListener {
     private int frame = 0;
     static final int FRAME_RATE = 50;
     final private Handler handler = new Handler();
 
     private CanvasLayout base;
-    private ImageSprite is_slime,bound_top,bound_down,bound_left,bound_right;
-    private TextView tv_debug;
+    private ImageSprite is_slime,bound_top,bound_down,bound_left,bound_right,platedFood;
+    private TextView tv_debug,tv_debug2;
+    private ImageView iv_slimeFood,iv_lolipop;
     private Button btn_save,btn_feed;
     private HorizontalScrollView HSV_foodCabinet;
+    private boolean foodPlated = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -38,7 +44,26 @@ public class HomeActivity extends Activity implements View.OnClickListener {
         HSV_foodCabinet.setElevation(9.f);//button的高度是2dp~8dp
 
         tv_debug = findViewById(R.id.tv_debug);
+        tv_debug2 = findViewById(R.id.tv_debug2);
+        iv_slimeFood = findViewById(R.id.iv_slimeFood);
+        iv_lolipop = findViewById(R.id.iv_lolipop);
         base = findViewById(R.id.background);
+        base.setInterceptTouchHandler(new CanvasLayout.InterceptTouchHandler() {//拿取食物的方法，需重寫
+            @Override
+            public boolean onInterceptTouch(MotionEvent event) {
+                Rect r = new Rect();
+                iv_slimeFood.getHitRect(r);
+                if(!foodPlated && r.contains((int) event.getRawX(), (int)event.getRawY())){
+                    platedFood = new ImageSprite(iv_slimeFood.getWidth(),iv_slimeFood.getHeight(),base,HomeActivity.this);
+                    platedFood.setDrawableById(R.drawable.slime_food);
+                    platedFood.setElevation(10.f);
+                    platedFood.setOnTouchListener(HomeActivity.this);
+                    platedFood.setPos(iv_slimeFood.getX(), iv_slimeFood.getY());
+                    foodPlated = true;
+                }
+                return false;
+            }
+        });
 
         handler.postDelayed(initialize,20);
     }
@@ -57,7 +82,7 @@ public class HomeActivity extends Activity implements View.OnClickListener {
     }
 
     @Override
-    public void onClick(View v) {
+    public void onClick(View v) {//處理家中所有按鈕的事件
         switch (v.getId()){
             case R.id.btn_save:
                 finish();
@@ -71,6 +96,59 @@ public class HomeActivity extends Activity implements View.OnClickListener {
                 HSV_foodCabinet.requestLayout();
                 break;
         }
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        v.performClick();
+        if(v.getId() == is_slime.getId()){//史萊姆被觸碰時的事件
+            switch (event.getAction()){
+                case MotionEvent.ACTION_DOWN:
+                    tv_debug2.setText("slime touched");
+                    slimeState.addState(grabbed, false);
+                    is_slime.setSpeed(0);
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    tv_debug2.setText("slime moved");
+                    is_slime.moveToMotion(event);
+                    break;
+                case MotionEvent.ACTION_UP:
+                    tv_debug2.setText("slime up");
+                    slimeState.removeState();
+                    break;
+            }
+            return true;
+        }else if(v.getId() == platedFood.getId()){//拿取食物的方法，需重寫
+            switch (event.getAction()){
+                case MotionEvent.ACTION_DOWN:
+                    tv_debug2.setText("platedFood touched");
+                    platedFood.moveToMotion(event);
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    tv_debug2.setText("platedFood moved");
+                    platedFood.moveToMotion(event);
+                    break;
+                case MotionEvent.ACTION_UP:
+                    tv_debug2.setText("platedFood untouched");
+                    if(platedFood.checkCollision(bound_top)){
+                        if(HSV_foodCabinet.getVisibility() == View.VISIBLE) {
+                            platedFood.destroy();
+                            foodPlated = false;
+                        }else {
+                            platedFood.setPos(platedFood.getX(), bound_top.getHitboxheight());
+                        }
+                    }
+                    break;
+                case MotionEvent.ACTION_OUTSIDE:
+                    tv_debug2.setText("outside platedFood");
+                    break;
+                case MotionEvent.ACTION_CANCEL:
+                    tv_debug2.setText("cancel platedFood");
+                    break;
+            }
+            return true;
+        }
+        return false;
     }
 
     private void setUiListener() {
@@ -113,25 +191,7 @@ public class HomeActivity extends Activity implements View.OnClickListener {
             is_slime = new ImageSprite(150,150, base,HomeActivity.this);
             //is_slime.setDrawableById(R.drawable.slime);
             is_slime.setImageSize(421,300);
-            is_slime.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent e) {
-                    v.performClick();
-                    switch (e.getAction()){
-                        case MotionEvent.ACTION_DOWN:
-                            slimeState.addState(grabbed, false);
-                            is_slime.setSpeed(0);
-                            break;
-                        case MotionEvent.ACTION_MOVE:
-                            is_slime.setPos(e.getRawX()-v.getWidth()/2.f, e.getRawY()-v.getHeight());
-                            break;
-                        case MotionEvent.ACTION_UP:
-                            slimeState.removeState();
-                            break;
-                    }
-                    return true;
-                }
-            });
+            is_slime.setOnTouchListener(HomeActivity.this);
 
             is_slime.addOnCollisionListener(new ImageSprite.OnCollisionListener(bound_top) {
                 @Override
@@ -171,7 +231,7 @@ public class HomeActivity extends Activity implements View.OnClickListener {
             });
 
             is_slime.setPos(base.getWidth()/2,base.getHeight()/2);
-            is_slime.setAnimation(SlimeAnimation.SLIMEGIRL_IDLE);
+            is_slime.setAnimation(SlimeAnimation.SLIMEGIRL_NORMAL);
 
             slimeState.addState(idle,false);
         }
@@ -179,6 +239,7 @@ public class HomeActivity extends Activity implements View.OnClickListener {
 
     long maxDelay=0;
     private Runnable mainLoop = new Runnable() {
+        @SuppressLint("SetTextI18n")
         @Override
         public void run() {
             long startRunTime = SystemClock.currentThreadTimeMillis();
@@ -255,5 +316,4 @@ public class HomeActivity extends Activity implements View.OnClickListener {
             is_slime.setElevation(1.f);
         }
     };
-
 }

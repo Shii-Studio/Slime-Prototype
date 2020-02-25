@@ -2,6 +2,7 @@ package com.shiistudio.slimeprototype;
 
 import java.util.Stack;
 
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class StateMachine {
     public static abstract class State{
         //用於實作state的介面

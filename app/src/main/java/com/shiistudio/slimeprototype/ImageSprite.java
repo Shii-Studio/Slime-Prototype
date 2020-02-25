@@ -1,15 +1,17 @@
 package com.shiistudio.slimeprototype;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class ImageSprite{
     private Context context;
     private CanvasLayout parent;
@@ -30,6 +32,7 @@ public class ImageSprite{
         imageView.setScaleType(ImageView.ScaleType.FIT_XY);
         hitbox = new ImageView(context);
         hitbox.setScaleType(ImageView.ScaleType.FIT_XY);
+        hitbox.setId(View.generateViewId());
         parent = viewGroup;
         parent.addImageSprite(this);
     }
@@ -46,6 +49,10 @@ public class ImageSprite{
         viewGroup.addView(hitbox, width, height);
     }
 
+    public int getId(){
+        return hitbox.getId();
+    }
+
     //設定圖片
     public void setDrawable(Drawable drawable){
         imageView.setImageDrawable(drawable);
@@ -55,6 +62,7 @@ public class ImageSprite{
         imageView.setImageDrawable(context.getDrawable(id));
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     public void setOnTouchListener(View.OnTouchListener onTouchListener){
         //設定碰觸事件
         //注意:在OnTouch事件中傳入的view是只有hitbox，而不是整個ImageSprite，建議避免直接操作傳入的view參數
@@ -85,6 +93,10 @@ public class ImageSprite{
         hitbox.setX(hitbox.getX() + xDelta);
         hitbox.setY(hitbox.getY() + yDelta);
         rePosImage();
+    }
+
+    public void moveToMotion(MotionEvent event){
+        setPos(event.getRawX()-hitbox.getWidth()/2.f, event.getRawY()-hitbox.getHeight()/2.f);
     }
 
     public void setElevation(float elevation){
@@ -196,20 +208,20 @@ public class ImageSprite{
             this.target = target;
         }
 
-        private boolean checkCollision(ImageSprite self){
-            Rect r1 = new Rect(),r2 = new Rect();
-            self.hitbox.getHitRect(r1);
-            target.hitbox.getHitRect(r2);
-            return r1.intersect(r2);
-        }
-
         private void processCollision(ImageSprite self){
-            if(checkCollision(self)){
+            if(self.checkCollision(target)){
                 onCollision(self, target);
             }
         }
 
         abstract public void onCollision(ImageSprite self, ImageSprite target);
+    }
+
+    public boolean checkCollision(ImageSprite target){
+        Rect r1 = new Rect(),r2 = new Rect();
+        hitbox.getHitRect(r1);
+        target.hitbox.getHitRect(r2);
+        return r1.intersect(r2);
     }
 
     public void addOnCollisionListener(OnCollisionListener listener){

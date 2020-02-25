@@ -38,7 +38,7 @@
             android:orientation="horizontal">
 
             <ImageView
-                android:id="@+id/imageView2"
+                android:id="@+id/iv_slimeFood"
                 android:layout_width="64dp"
                 android:layout_height="64dp"
                 android:layout_weight="1"
@@ -46,7 +46,7 @@
                 app:srcCompat="@drawable/slime_food" />
 
             <ImageView
-                android:id="@+id/imageView"
+                android:id="@+id/iv_lolipop"
                 android:layout_width="64dp"
                 android:layout_height="64dp"
                 android:layout_weight="1"
@@ -112,5 +112,13 @@
         android:background="@drawable/save_button"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_debug2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="DEBUG_TEXT"
+        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </com.shiistudio.slimeprototype.CanvasLayout>
