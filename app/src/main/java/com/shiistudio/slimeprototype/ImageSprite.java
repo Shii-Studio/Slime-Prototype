@@ -62,6 +62,10 @@ public class ImageSprite{
         imageView.setImageDrawable(context.getDrawable(id));
     }
 
+    public void removeDrawable(){
+        imageView.setImageResource(android.R.color.transparent);
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     public void setOnTouchListener(View.OnTouchListener onTouchListener){
         //設定碰觸事件

@@ -31,7 +31,7 @@ public class CanvasLayout extends ConstraintLayout {
         super(context, attrs, defStyleAttr);
     }
 
-    public interface InterceptTouchHandler{
+    public interface InterceptTouchHandler{//在需要CanvasLayout擷取畫面觸碰事件時使用
         boolean onInterceptTouch(MotionEvent event);
     }
 
@@ -46,13 +46,13 @@ public class CanvasLayout extends ConstraintLayout {
 
     public void addImageSprite(ImageSprite sprite){
         spriteList.add(sprite);
-    }
+    }//在CanvasLayout中新增ImageSprite，用於碰撞事件的監聽
 
     public void removeImageSprite(ImageSprite sprite){
         spriteList.remove(sprite);
     }
 
-    public void handleAllCollision(){
+    public void handleAllCollision(){//依照速度移動ImageSprite，同時監聽碰撞事件
         collisionCount = 0;
         for(ImageSprite sprite: spriteList){
             sprite.processSpeed();
@@ -60,7 +60,7 @@ public class CanvasLayout extends ConstraintLayout {
         }
     }
 
-    public void pause(){
+    public void pause(){//將所有動畫停止
         for(ImageSprite imageSprite: spriteList){
             imageSprite.stopAnimation();
         }

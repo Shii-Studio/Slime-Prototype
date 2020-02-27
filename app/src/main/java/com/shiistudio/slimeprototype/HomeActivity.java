@@ -2,18 +2,17 @@ package com.shiistudio.slimeprototype;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class HomeActivity extends Activity implements View.OnClickListener, View.OnTouchListener {
@@ -24,9 +23,9 @@ public class HomeActivity extends Activity implements View.OnClickListener, View
     private CanvasLayout base;
     private ImageSprite is_slime,bound_top,bound_down,bound_left,bound_right,platedFood;
     private TextView tv_debug,tv_debug2;
-    private ImageView iv_slimeFood,iv_lolipop;
+    private ImageView iv_food;
     private Button btn_save,btn_feed;
-    private HorizontalScrollView HSV_foodCabinet;
+    private ConstraintLayout CL_foodCabinet;
     private boolean foodPlated = false;
 
     @Override
@@ -40,30 +39,14 @@ public class HomeActivity extends Activity implements View.OnClickListener, View
         btn_feed = findViewById(R.id.btn_feed);
         btn_feed.setOnClickListener(this);
 
-        HSV_foodCabinet = findViewById(R.id.HSV_foodCabinet);
-        HSV_foodCabinet.setElevation(9.f);//button的高度是2dp~8dp
+        CL_foodCabinet = findViewById(R.id.CL_foodCabinet);
+        CL_foodCabinet.setElevation(9.f);//button的高度是2dp~8dp
+        CL_foodCabinet.setVisibility(View.INVISIBLE);
 
         tv_debug = findViewById(R.id.tv_debug);
         tv_debug2 = findViewById(R.id.tv_debug2);
-        iv_slimeFood = findViewById(R.id.iv_slimeFood);
-        iv_lolipop = findViewById(R.id.iv_lolipop);
+        iv_food = findViewById(R.id.iv_food);
         base = findViewById(R.id.background);
-        base.setInterceptTouchHandler(new CanvasLayout.InterceptTouchHandler() {//拿取食物的方法，需重寫
-            @Override
-            public boolean onInterceptTouch(MotionEvent event) {
-                Rect r = new Rect();
-                iv_slimeFood.getHitRect(r);
-                if(!foodPlated && r.contains((int) event.getRawX(), (int)event.getRawY())){
-                    platedFood = new ImageSprite(iv_slimeFood.getWidth(),iv_slimeFood.getHeight(),base,HomeActivity.this);
-                    platedFood.setDrawableById(R.drawable.slime_food);
-                    platedFood.setElevation(10.f);
-                    platedFood.setOnTouchListener(HomeActivity.this);
-                    platedFood.setPos(iv_slimeFood.getX(), iv_slimeFood.getY());
-                    foodPlated = true;
-                }
-                return false;
-            }
-        });
 
         handler.postDelayed(initialize,20);
     }
@@ -88,12 +71,12 @@ public class HomeActivity extends Activity implements View.OnClickListener, View
                 finish();
                 break;
             case R.id.btn_feed:
-                if(HSV_foodCabinet.getVisibility() == View.VISIBLE) {
-                    HSV_foodCabinet.setVisibility(View.INVISIBLE);
+                if(CL_foodCabinet.getVisibility() == View.VISIBLE) {
+                    CL_foodCabinet.setVisibility(View.INVISIBLE);
                 }else{
-                    HSV_foodCabinet.setVisibility(View.VISIBLE);
+                    CL_foodCabinet.setVisibility(View.VISIBLE);
                 }
-                HSV_foodCabinet.requestLayout();
+                CL_foodCabinet.requestLayout();
                 break;
         }
     }
@@ -118,11 +101,19 @@ public class HomeActivity extends Activity implements View.OnClickListener, View
                     break;
             }
             return true;
-        }else if(v.getId() == platedFood.getId()){//拿取食物的方法，需重寫
+        }else if(v.getId() == platedFood.getId()){//拿取食物的方法
             switch (event.getAction()){
                 case MotionEvent.ACTION_DOWN:
                     tv_debug2.setText("platedFood touched");
-                    platedFood.moveToMotion(event);
+                    if(foodPlated){
+                        platedFood.moveToMotion(event);
+                    }else if(CL_foodCabinet.getVisibility() == View.VISIBLE){
+                        foodPlated = true;
+                        platedFood.setDrawable(iv_food.getDrawable());
+                    }else{
+                        return false;
+                    }
+                    platedFood.setElevation(10.f);
                     break;
                 case MotionEvent.ACTION_MOVE:
                     tv_debug2.setText("platedFood moved");
@@ -131,19 +122,15 @@ public class HomeActivity extends Activity implements View.OnClickListener, View
                 case MotionEvent.ACTION_UP:
                     tv_debug2.setText("platedFood untouched");
                     if(platedFood.checkCollision(bound_top)){
-                        if(HSV_foodCabinet.getVisibility() == View.VISIBLE) {
-                            platedFood.destroy();
+                        if(CL_foodCabinet.getVisibility() == View.VISIBLE) {
+                            platedFood.removeDrawable();
+                            platedFood.setPos(iv_food.getX(), iv_food.getY());
                             foodPlated = false;
                         }else {
                             platedFood.setPos(platedFood.getX(), bound_top.getHitboxheight());
                         }
                     }
-                    break;
-                case MotionEvent.ACTION_OUTSIDE:
-                    tv_debug2.setText("outside platedFood");
-                    break;
-                case MotionEvent.ACTION_CANCEL:
-                    tv_debug2.setText("cancel platedFood");
+                    platedFood.setElevation(2.f);
                     break;
             }
             return true;
@@ -151,7 +138,7 @@ public class HomeActivity extends Activity implements View.OnClickListener, View
         return false;
     }
 
-    private void setUiListener() {
+    private void setUiListener() {//在navigation bar出現3秒後再次隱藏
         getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
             @Override
             public void onSystemUiVisibilityChange(int visibility) {
@@ -165,15 +152,19 @@ public class HomeActivity extends Activity implements View.OnClickListener, View
         });
     }
 
-    private void hideUi(){
+    private void hideUi(){//隱藏上方的status bar和下方的navigation bar
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
     }
 
     private Runnable initialize = new Runnable() {
         @Override
-        public void run() {
-            HSV_foodCabinet.getLayoutParams().height = base.getHeight()/3;
+        public void run() {//初始化執行緒，只執行一次
+            CL_foodCabinet.getLayoutParams().height = base.getHeight()/3;
+            platedFood = new ImageSprite(iv_food.getWidth(),iv_food.getHeight(),base,HomeActivity.this);
+            platedFood.setPos(iv_food.getX(),iv_food.getY());
+            platedFood.removeDrawable();
+            platedFood.setOnTouchListener(HomeActivity.this);
 
             bound_top = new ImageSprite(base, HomeActivity.this);
             bound_down = new ImageSprite(base, HomeActivity.this);
@@ -241,14 +232,8 @@ public class HomeActivity extends Activity implements View.OnClickListener, View
     private Runnable mainLoop = new Runnable() {
         @SuppressLint("SetTextI18n")
         @Override
-        public void run() {
+        public void run() {//遊戲主執行緒
             long startRunTime = SystemClock.currentThreadTimeMillis();
-
-            if(frame < FRAME_RATE/2){
-                is_slime.changeImageSize(+1,-1);
-            }else if(frame < FRAME_RATE){
-                is_slime.changeImageSize(-1,+1);
-            }
 
             base.handleAllCollision();
             tv_debug.setText("slime direction: "+is_slime.getDirection()+
@@ -278,9 +263,20 @@ public class HomeActivity extends Activity implements View.OnClickListener, View
         }
     };
 
-    private StateMachine slimeState = new StateMachine();
+    private StateMachine slimeState = new StateMachine(){
+        //史萊姆狀態機
+        @Override
+        public void run() {
+            super.run();
+            if(frame < FRAME_RATE/2){//史萊姆抖動
+                is_slime.changeImageSize(+1,-1);
+            }else if(frame < FRAME_RATE){
+                is_slime.changeImageSize(-1,+1);
+            }
+        }
+    };
 
-    private StateMachine.State idle = new StateMachine.State() {
+    private StateMachine.State idle = new StateMachine.State() {//閒置狀態
         private long moveTime = SystemClock.currentThreadTimeMillis() + 1000;
         boolean isMoving = false;
         @Override
@@ -300,7 +296,7 @@ public class HomeActivity extends Activity implements View.OnClickListener, View
         }
     };
 
-    private StateMachine.State grabbed = new StateMachine.State() {
+    private StateMachine.State grabbed = new StateMachine.State() {//抓取狀態
         @Override
         protected void run() {}
 

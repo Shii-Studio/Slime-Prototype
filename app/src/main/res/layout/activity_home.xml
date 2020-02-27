@@ -19,42 +19,6 @@
         app:layout_constraintStart_toEndOf="@+id/btn_save"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <HorizontalScrollView
-        android:id="@+id/HSV_foodCabinet"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:background="@drawable/food_cabinet"
-        android:visibility="invisible"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:visibility="invisible">
-
-        <LinearLayout
-            android:id="@+id/LL_food"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_margin="8dp"
-            android:orientation="horizontal">
-
-            <ImageView
-                android:id="@+id/iv_slimeFood"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:layout_weight="1"
-                android:src="@drawable/slime_food"
-                app:srcCompat="@drawable/slime_food" />
-
-            <ImageView
-                android:id="@+id/iv_lolipop"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:layout_weight="1"
-                android:src="@drawable/lolipop"
-                app:srcCompat="@drawable/lolipop" />
-        </LinearLayout>
-    </HorizontalScrollView>
-
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline"
         android:layout_width="wrap_content"
@@ -120,5 +84,54 @@
         android:text="DEBUG_TEXT"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/CL_foodCabinet"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:background="@drawable/food_cabinet"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/iv_food"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/slime_food"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.498"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/btn_left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="left"
+            app:layout_constraintBottom_toBottomOf="@+id/iv_food"
+            app:layout_constraintEnd_toStartOf="@+id/iv_food"
+            app:layout_constraintTop_toTopOf="@+id/iv_food" />
+
+        <Button
+            android:id="@+id/btn_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="right"
+            app:layout_constraintBottom_toBottomOf="@+id/iv_food"
+            app:layout_constraintStart_toEndOf="@+id/iv_food"
+            app:layout_constraintTop_toTopOf="@+id/iv_food" />
+
+        <TextView
+            android:id="@+id/tv_foodCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="food count"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/iv_food"
+            app:layout_constraintStart_toStartOf="@+id/iv_food"
+            app:layout_constraintTop_toBottomOf="@+id/iv_food" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </com.shiistudio.slimeprototype.CanvasLayout>
