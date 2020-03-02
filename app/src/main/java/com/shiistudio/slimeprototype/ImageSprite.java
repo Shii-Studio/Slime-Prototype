@@ -233,7 +233,7 @@ public class ImageSprite{
         collisionList.add(listener);
     }
 
-    public void processCollision(){
+    public void processAllCollision(){
         if(!pauseCollision) {
             for (OnCollisionListener listener : collisionList) {
                 CanvasLayout.collisionCount += 1;

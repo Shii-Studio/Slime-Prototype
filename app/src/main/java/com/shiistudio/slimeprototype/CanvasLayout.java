@@ -56,7 +56,7 @@ public class CanvasLayout extends ConstraintLayout {
         collisionCount = 0;
         for(ImageSprite sprite: spriteList){
             sprite.processSpeed();
-            sprite.processCollision();
+            sprite.processAllCollision();
         }
     }
 
