@@ -81,6 +81,7 @@ public class HomeActivity extends Activity implements View.OnClickListener, View
         }
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         v.performClick();
